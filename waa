@@ -1,1 +1,532 @@
+local DiscordLib = loadstring(game:HttpGet"https://raw.githubusercontent.com/dawid-scripts/UI-Libs/main/discord%20lib.txt")()
 
+local win = DiscordLib:Window("Shadow Fun v0.8 (Beta)")
+
+local serv = win:Server("Тутор, функции", "http://www.roblox.com/asset/?id=6031075938")
+
+local lbls = serv:Channel("Туториал")
+
+lbls:Label("Привет обладатель Shadow Fun, распространение скрипта - чс")
+
+local btns = serv:Channel("Полезные функции")
+
+btns:Button("FakePVP", function()
+local UserInputService = game:GetService("UserInputService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local remote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("PVPToggle")
+
+-- Функция для точной задержки в 1 миллисекунду
+local function preciseWait(ms)
+    local targetTime = os.clock() + (ms / 1000)
+    while os.clock() < targetTime do end
+end
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end  
+
+    if input.KeyCode == Enum.KeyCode.F then
+        print("Попытка включить PvP")
+        
+        -- Пробуем включить PvP
+        if remote:IsA("RemoteEvent") then
+            remote:FireServer(true)
+        elseif remote:IsA("RemoteFunction") then
+            local result = remote:InvokeServer(true)
+            print("PVP Включено. Результат:", result)
+        end
+
+        -- Пытаемся отключить PvP через 1 миллисекунду
+        task.delay(0.001, function() -- Можно также использовать preciseWait(1)
+            print("Попытка выключить PvP")
+            
+            for i = 1, 5 do  -- Спамим 5 раз с разными параметрами
+                preciseWait(1)  -- Точная задержка в 1 миллисекунду
+                if remote:IsA("RemoteEvent") then
+                    remote:FireServer(false)
+                    remote:FireServer(0)
+                    remote:FireServer()
+                elseif remote:IsA("RemoteFunction") then
+                    local result = remote:InvokeServer(false)
+                    print("Попытка выключить PvP, результат:", result)
+                end
+            end
+        end)
+    end
+end)
+DiscordLib:Notification("Увендомление", "Загружено", "Окей!")
+end)
+
+btns:Toggle("тп оруж",false, function(Value)
+    local uis = game:GetService('UserInputService')
+
+    ---------------------
+    
+    function Notify(text, colortext)
+        local screenui = Instance.new("ScreenGui", game.Players.LocalPlayer.PlayerGui)
+        screenui.Name = 'Notification'
+        local texta = Instance.new("TextLabel", screenui)
+        texta.BackgroundColor3 = Color3.fromRGB(26, 26, 26)
+        texta.Position = UDim2.new(0.73, 0, 2, 0)
+        texta.Size = UDim2.new(0.275, 0, 0.1, 0)
+        texta.TextStrokeTransparency = 0
+        texta.TextScaled = true
+        texta.Text = text
+        if colortext == "Red" then
+        texta.TextColor3 = Color3.fromRGB(255, 0, 0)
+        else
+        texta.TextColor3 = Color3.fromRGB(0, 255, 0) 
+        end
+        game:GetService('TweenService'):Create(
+            texta, 
+            TweenInfo.new(
+                0.5,
+                Enum.EasingStyle.Quart,
+                Enum.EasingDirection.Out,
+                0,
+                false
+            ),
+            {Position = UDim2.new(0.73, 0, 0.7, 0)}):Play()
+        wait(4)
+        game:GetService('TweenService'):Create(
+            texta, 
+            TweenInfo.new(
+                0.8,
+                Enum.EasingStyle.Quart,
+                Enum.EasingDirection.Out,
+                0,
+                false
+            ),
+            {Transparency = 1}):Play()
+        wait(1)
+        screenui:Destroy()
+    end
+    
+    ---------------------
+    local actived = false
+    
+    uis.InputBegan:Connect(function(input, proccesed)
+        if input.KeyCode == Enum.KeyCode.C and proccesed == false then
+            if actived == false then
+            actived = true
+            Notify(" Авто-Лут: включён ", "Green")
+            warn("KeyCode was triggered")
+            else
+            actived = false
+            Notify(" Авто-Лут: выключён ", "Red")
+            warn("KeyCode was triggered")
+            end
+        end
+    end)
+    
+    while true do
+    
+        if actived == true then
+    
+            for i,v in pairs(workspace:GetChildren()) do
+                
+                if workspace:FindFirstChild(game.Players.LocalPlayer.Name) and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    if v:FindFirstChild("Handle") and v.Handle:FindFirstChild("ItemGlow") then
+                        v.Handle.CanCollide = false
+                        v.Handle.CFrame = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart").CFrame
+                    end
+                end
+    
+            end
+    
+        end
+    
+    
+        task.wait()
+    end
+print(bool)
+end)
+
+btns:Toggle("No slow",false, function(Value)
+    aAS = Value
+	while aAS do
+wait()
+		if game.Players.LocalPlayer.Character.Humanoid.WalkSpeed <= 8 then
+		game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 16
+		end
+	end
+print(bool)
+end)
+
+btns:Toggle("Авто удар",false, function(Value)
+			local PAT = Value
+local player = game:GetService("Players").LocalPlayer
+local UIS = game:GetService("UserInputService")
+local ALTActive = false -- Renamed to ToggleActive for clarity
+local toggleKey = Enum.KeyCode.E -- Change the key binding here if needed
+
+-- Whitelist for parts or models by name
+local whitelist = {
+	["WhitelistedPart1"] = true,
+	["WhitelistedPart2"] = true,
+	["WhitelistedModel"] = true
+}
+
+-- Whitelist for player names (entities belonging to these players will be ignored)
+local playerNameWhitelist = {
+    ["VEX"] = true,
+    ["dfgggvfhj"] = true
+}
+
+-- Function to create a notification
+local function createNotification(text)
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Parent = game:GetService("CoreGui")
+
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 250, 0, 70)
+    frame.Position = UDim2.new(1, -260, 1, -80)
+    frame.BackgroundColor3 = Color3.new(0, 0, 0)
+    frame.BackgroundTransparency = 0.5
+    frame.BorderSizePixel = 0
+    frame.Parent = screenGui
+
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, 0, 1, 0)
+    label.Text = text
+    label.TextColor3 = Color3.new(1, 0, 0)
+    label.BackgroundTransparency = 1
+    label.TextScaled = true
+    label.TextWrapped = true
+    label.Parent = frame
+
+    -- Animation for the notification
+    local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+    local tween = game:GetService("TweenService"):Create(frame, tweenInfo, {Position = UDim2.new(1, -260, 1, -150)})
+    tween:Play()
+
+    -- Fade out the notification over 5 seconds
+    task.delay(3, function()
+        local fadeTweenInfo = TweenInfo.new(2, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+        local fadeTween = game:GetService("TweenService"):Create(frame, fadeTweenInfo, {BackgroundTransparency = 1})
+        fadeTween:Play()
+        fadeTween.Completed:Wait()
+        screenGui:Destroy()
+    end)
+end
+
+-- Toggle the ALTActive state on 'E' key press
+UIS.InputBegan:Connect(function(input, gameProcessed)
+	if input.KeyCode == toggleKey and not gameProcessed then
+		ALTActive = not ALTActive -- Toggle the state
+		if ALTActive then
+			print("Toggle activated")
+			createNotification("Авто удар успешно включен")
+		else
+			print("Toggle deactivated")
+			createNotification("Авто удар выключен")
+		end
+	end
+end)
+
+while PAT do
+	task.wait()
+	if ALTActive then
+		local parts = workspace:GetPartBoundsInRadius(player.Character:WaitForChild("HumanoidRootPart").Position, 5.6)
+		local foundEntity = false
+		for _, part in ipairs(parts) do
+			-- Check if part is not in the whitelist of parts or models
+			if not whitelist[part.Name]
+				and (part:IsA("BasePart") or part:IsA("UnionOperation") or part:IsA("Model"))
+				and not part.Anchored
+				and part:IsDescendantOf(workspace)
+				and not part:IsDescendantOf(player.Character) then
+
+				-- Check if the part belongs to a player in the playerNameWhitelist
+				local partParent = part:FindFirstAncestorOfClass("Model")
+				local partPlayer = game.Players:GetPlayerFromCharacter(partParent)
+
+				if partPlayer and playerNameWhitelist[partPlayer.Name] then
+					-- Skip this part if the player is whitelisted
+					continue
+				end
+
+				-- Entity found that is not whitelisted
+				foundEntity = true
+				break
+			end
+		end
+
+		if foundEntity then
+			-- Invoke server to process found entity
+			game:GetService("ReplicatedStorage").Remotes.HitRequest:InvokeServer()
+		else
+			-- Optional: No entity found behavior
+		end
+	end
+end
+print(bool)
+end)
+
+btns:Toggle("Timer Ragdoll",false, function(bool)
+    local Players = game:GetService("Players")
+    local RunService = game:GetService("RunService")
+    local UserInputService = game:GetService("UserInputService")
+    
+    local localPlayer = Players.LocalPlayer  -- Локальный игрок
+    local espEnabled = true  -- Флаг для включения/выключения ESP
+    local connections = {}   -- Хранит все соединения для каждого игрока
+    local activeESP = {}  -- Хранит активные ESP элементы
+    
+    -- Функция для создания ESP (таймера над головой)
+    local function createESP(player)
+        if not espEnabled or player == localPlayer then return end  -- Пропускаем локального игрока и если ESP выключен
+        
+        local espGui = Instance.new("BillboardGui")
+        espGui.Size = UDim2.new(2, 0, 2, 0)
+        espGui.StudsOffset = Vector3.new(0, 3, 0)
+        espGui.AlwaysOnTop = true
+        espGui.Adornee = player.Character:WaitForChild("Head")
+        
+        local timeLabel = Instance.new("TextLabel", espGui)
+        timeLabel.Size = UDim2.new(1, 0, 1, 0)
+        timeLabel.BackgroundTransparency = 1
+        timeLabel.Text = "5"
+        timeLabel.TextColor3 = Color3.new(1, 0, 0)
+        timeLabel.TextScaled = true
+        
+        espGui.Parent = player.Character
+        activeESP[player] = espGui  -- Сохраняем ESP
+        
+        local secondsLeft = 5
+        spawn(function()
+            while secondsLeft > 0 and espEnabled do
+                timeLabel.Text = tostring(secondsLeft)
+                wait(1)
+                secondsLeft -= 1
+            end
+            espGui:Destroy()
+            activeESP[player] = nil
+        end)
+    end
+    
+    -- Функция для отключения всех ESP
+    local function disableAllESP()
+        for _, gui in pairs(activeESP) do
+            if gui then
+                gui:Destroy()
+            end
+        end
+        activeESP = {}
+    end
+    
+    -- Функция для отслеживания BodyVelocity
+    local function detectBodyVelocity(player)
+        if player == localPlayer then return end  -- Пропускаем локального игрока
+        
+        local character = player.Character or player.CharacterAdded:Wait()
+        local rootPart = character:WaitForChild("HumanoidRootPart")
+        
+        local conn
+        conn = RunService.Heartbeat:Connect(function()
+            if espEnabled then
+                local bv = rootPart:FindFirstChild("BodyVelocity")
+                if bv then
+                    createESP(player)
+                    bv:Destroy()
+                end
+            end
+        end)
+        
+        connections[player] = conn
+    end
+    
+    -- Функция для переключения ESP по нажатию "N"
+    UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
+        if gameProcessedEvent then return end
+        
+        if input.KeyCode == Enum.KeyCode.N then
+            espEnabled = not espEnabled  -- Переключаем состояние
+            if not espEnabled then
+                disableAllESP()  -- Отключаем все ESP
+            end
+        end
+    end)
+    
+    -- Функция для сброса и добавления биндинга при возрождении
+    local function setupBindingsForPlayer(player)
+        local function onCharacterAdded(character)
+            if connections[player] then
+                connections[player]:Disconnect()
+            end
+        
+            -- Перезапуск отслеживания BodyVelocity
+            detectBodyVelocity(player)
+        
+            -- Сразу создаем ESP при появлении персонажа
+            createESP(player)
+        end
+        
+        player.CharacterAdded:Connect(onCharacterAdded)
+        
+        -- Если персонаж уже существует, вызываем onCharacterAdded
+        if player.Character then
+            onCharacterAdded(player.Character)
+        end
+    end
+    
+    -- Обработка новых игроков
+    Players.PlayerAdded:Connect(function(player)
+        if player ~= localPlayer then
+            setupBindingsForPlayer(player)
+        end
+    end)
+    
+    -- Настраиваем бинды и отслеживание BodyVelocity для всех текущих игроков
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= localPlayer then
+            setupBindingsForPlayer(player)
+        end
+    end
+    
+    -- Удаляем соединения при выходе игрока
+    Players.PlayerRemoving:Connect(function(player)
+        if connections[player] then
+            connections[player]:Disconnect()
+            connections[player] = nil
+        end
+        if activeESP[player] then
+            activeESP[player]:Destroy()
+            activeESP[player] = nil
+        end
+    end)    
+print(bool)
+end)
+
+
+local btns = serv:Channel("Rage(HVH)")
+
+btns:Button("Kick Vepevka", function()
+    local UserInputService = game:GetService("UserInputService")
+    local Players = game:GetService("Players")
+    local RunService = game:GetService("RunService")
+    local targetPart = workspace.Kil
+    
+    -- Изменяем размер kil при запуске скрипта
+    targetPart.Size = Vector3.new(1, 1, 2)
+    
+    local isTeleporting = false
+    local targetPlayer
+    
+    local function startTeleporting(player)
+        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("Torso") then
+            isTeleporting = true
+            targetPlayer = player
+    
+            while isTeleporting do
+                if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("Torso") then
+                    targetPart.Position = targetPlayer.Character.Torso.Position + Vector3.new(0, 2, 0) -- Поднимаем объект над torso игрока
+                end
+                RunService.RenderStepped:Wait()
+            end
+        end
+    end
+    
+    local function stopTeleporting()
+        isTeleporting = false
+        targetPlayer = nil
+        targetPart.Position = Vector3.new(0, -1000, 100) -- Убираем объект с поля зрения (можно изменить на любое другое значение)
+    end
+    
+    -- Обработка нажатия клавиши F
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if gameProcessed then return end -- Игнорируем, если событие обрабатывается игрой
+    
+        if input.KeyCode == Enum.KeyCode.F then
+            local mouse = Players.LocalPlayer:GetMouse()
+            local selectedPlayer = Players:GetPlayerFromCharacter(mouse.Target.Parent)
+    
+            if selectedPlayer then
+                if selectedPlayer == targetPlayer then
+                    stopTeleporting()  -- Остановить телепортацию, если нажали на того же игрока
+                else
+                    -- Остановить телепортацию, если уже телепортируем к другому игроку
+                    stopTeleporting()
+                    startTeleporting(selectedPlayer)
+                end
+            end
+        end
+    end)
+DiscordLib:Notification("Увендомление", "Загружено", "Окей!")
+end)
+
+btns:Button("Удаление KillParts", function()
+    local item = workspace:FindFirstChild("KillParts") -- Парт за картой
+
+    if item then
+        item:Destroy()
+        print("Предмет удален!")
+    else
+        print("Предмет не найден!")
+    end
+    ---------------------
+    local item = workspace:FindFirstChild("PoisonParts") -- Кислота
+
+    if item then
+        item:Destroy()
+        print("Предмет удален!")
+    else
+        print("Предмет не найден!")
+    end
+    ---------------------
+    local item = workspace:FindFirstChild("FireParts") -- костер
+
+    if item then
+        item:Destroy()
+        print("Предмет удален!")
+    else
+        print("Предмет не найден!")
+    end
+DiscordLib:Notification("Увендомление", "Загружено", "Окей!")
+end)
+
+btns:Toggle("Анти удар",false, function(bool)
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    
+    game:GetService("RunService").Heartbeat:Connect(function()
+        if not Character then return end
+        local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
+        if not HumanoidRootPart then return end
+        
+        for _, player in pairs(Players:GetPlayers()) do  -- Изменено на всех игроков
+            if player ~= LocalPlayer then  -- Проверка, чтобы исключить локального игрока
+                local hitbox = player.Character and player.Character:FindFirstChild("Hitbox")
+                if hitbox then
+                    local distance = (hitbox.Position - HumanoidRootPart.Position).Magnitude
+                    if distance <= 8.5 then
+                        -- Телепортируемся назад на 3 блока
+                        local backwardsCFrame = HumanoidRootPart.CFrame * CFrame.new(0, 5, 0)
+                        HumanoidRootPart.CFrame = backwardsCFrame
+                    end
+                end
+            end
+        end
+    end)
+print(bool)
+end)
+
+local serv = win:Server("Разное", "http://www.roblox.com/asset/?id=6031075938")
+
+local btns = serv:Channel("Админки")
+
+btns:Button("Инф елд", function()
+loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
+DiscordLib:Notification("Увендомление", "Загружено", "Окей!")
+end)
+
+btns:Button("Инф елд Ребилд", function()
+loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Infinite-Yield-Reborn-Legacy-21819"))()
+DiscordLib:Notification("Увендомление", "Загружено", "Окей!")
+end)
+
+btns:Button("Фатес админ(патч)", function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/FilteringEnabled/NamelessAdmin/main/Source"))()
+DiscordLib:Notification("Увендомление", "Загружено", "Окей!")
+end)
